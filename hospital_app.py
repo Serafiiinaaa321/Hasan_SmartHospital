@@ -217,3 +217,41 @@ with st.form("triage_form"):
         gender = st.selectbox("Gender", options=['Female', 'Male'])
 
     submitted = st.form_submit_button("Get AI Recommendation →")
+
+if submitted:
+    patient = pd.DataFrame([{
+        'age' : age,
+        'gender' : gender_map.get(gender, 0),
+        'fever' : int(fever),
+        'cough' : int(cough),
+        'headache' : int(headache),
+        'chest_pain' : int(chest_pain),
+        'stomach_pain' : int(stomach_pain),
+        'shortness_breath' : int(shortness_breath),
+        'nausea_vomiting' : int(nausea_vomiting),
+        'dizziness' : int(dizziness),
+        'skin_rash' : int(skin_rash),
+        'temperature_level' : temp_map.get(temperature_level, 1),
+        'heart_rate_level' : hr_map.get(heart_rate_level, 1),
+        'duration' : dur_map.get(duration, 1),
+        'asthma' : int(asthma),
+        'hypertension' : int(hypertension),
+        'heart_disease' : int(heart_disease),
+        'cheif_complaint' : cc_map.get(chief_complaint, 9)
+    }])
+
+    patient_scaled = patient.copy()
+    patient_scaled[cols_to_scale] = scaler.transform(patient[cols_to_scale])
+
+    pred = model.predict(patient_scaled[features])[0]
+    proba = model.predict_proba(patient_scaled[features])(0)
+    dept_name = dept_map_inv[pred]
+    confidence = proba[pred] * 100
+    info = DEPT_INFO[dept_name]
+
+    st.markdown("---")
+    st.markdown("""
+    <div style="font-size:22px;font-weight:700;color:#111827;margin-bottom:4px;">AI Recomendation</div>
+    <div style="font-size:14px;color:#6b7280;margin-bottom:1.5rem;">Based on the information you provide</div>
+    """, unsafe_allow_html=True)
+        
